@@ -7,6 +7,7 @@ from scrapy.shell import inspect_response
 import json
 import os
 from stravascrape.login import my_email, my_password #This is my own file with the login credentials
+from stravascrape.items import RideItem
 #from westworld.items import WestworldItem
         
 class Spider1(Spider):
@@ -80,10 +81,16 @@ class Spider1(Spider):
         i=1;
         for ride in resp_obj['models']:
             print(str(i)+": "+str(ride['id']))
+
+            item = RideItem()
+            item['ride_id']  = ride['id']
+            item['name'] = ride['name']
+
+            yield item
+
             i+=1
 
         
-
  
         print("<<<<<<END OF SCRAP FUNCTION>>>>>>>>>>")
 
