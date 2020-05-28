@@ -45,7 +45,7 @@ class Spider1(Spider):
         #in /dashboard
         token = response.xpath("/html/head/meta[@name='csrf-token']/@content").extract_first()
         print("token found is: "+token)
-        page_n = 1
+        page_n = 800
         data_page = 'https://www.strava.com/athlete/training_activities?keywords=&activity_type=&workout_type=&commute=&private_activities=&trainer=&gear=&new_activity_only=false&page='+str(page_n)
         headers = {
             "authority": "api2.branch.io",
@@ -77,14 +77,37 @@ class Spider1(Spider):
 
     def start_scraping(self,response):
         print("\n\n<<<<<<<<< START start_scraping>>>>>>>>>>>\n\n")
+
+        inspect_response(response,self)
+
         resp_obj = json.loads(response.text) #How do I write this to a csv file?
         i=1;
         for ride in resp_obj['models']:
-            print(str(i)+": "+str(ride['id']))
 
             item = RideItem()
             item['ride_id']  = ride['id']
             item['name'] = ride['name']
+
+            item['activity_type_display_name'] = ride['activity_type_display_name']
+            item['bike_id'] = ride['bike_id']
+            item['calories'] = ride['calories']
+            item['distance'] = ride['distance']
+            item['distance_raw'] = ride['distance_raw']
+            item['elapsed_time'] = ride['elapsed_time']
+            item['elapsed_time_raw'] = ride['elapsed_time_raw']
+            item['elevation_gain'] = ride['elevation_gain']
+            item['elevation_gain_raw'] = ride['elevation_gain_raw']
+            item['elevation_unit'] = ride['elevation_unit']
+            item['long_unit'] = ride['long_unit']
+            item['moving_time'] = ride['moving_time']
+            item['moving_time_raw'] = ride['moving_time_raw']
+            item['short_unit'] = ride['short_unit']
+            item['start_date'] = ride['start_date']
+            item['start_date_local_raw'] = ride['start_date_local_raw']
+            item['start_day'] = ride['start_day']
+            item['start_time']= ride['start_time']
+            item['ride_type'] = ride['type'] #response is 'type'
+            item['visibility'] = ride['visibility']
 
             yield item
 
