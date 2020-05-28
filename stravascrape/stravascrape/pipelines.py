@@ -9,9 +9,27 @@ from scrapy.exceptions import DropItem
 from scrapy.exporters import CsvItemExporter
 
 
-class WriteRidesPipeline:
+class Spider1Pipeline:
     def __init__(self):
-        self.filename = 'rides.csv'
+        self.filename = 'spider1_output.csv'
+
+    def open_spider(self, spider):
+        self.csvfile = open(self.filename, 'wb')
+        self.exporter = CsvItemExporter(self.csvfile)
+        self.exporter.start_exporting()
+
+    def close_spider(self, spider):
+        self.exporter.finish_exporting()
+        self.csvfile.close()
+
+    def process_item(self, item, spider):
+        self.exporter.export_item(item)
+        return item
+        
+
+class Spider2Pipeline:
+    def __init__(self):
+        self.filename = 'spider2_output.csv'
 
     def open_spider(self, spider):
         self.csvfile = open(self.filename, 'wb')

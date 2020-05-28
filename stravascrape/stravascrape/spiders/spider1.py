@@ -12,6 +12,13 @@ from stravascrape.items import RideItem
         
 class Spider1(Spider):
     name = "strava_spider1"
+    custom_settings = {
+        'ITEM_PIPELINES': {
+            'stravascrape.pipelines.Spider1Pipeline': 1
+        }
+    }
+
+
     allowed_urls = ["https://www.strava.com"]
     start_urls = ["https://www.strava.com/login"]
     base_url = 'https://www.strava.com/athlete/training_activities?keywords=&activity_type=&workout_type=&commute=&private_activities=&trainer=&gear=&new_activity_only=false&page='
