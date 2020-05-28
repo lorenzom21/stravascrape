@@ -15,13 +15,13 @@ class Spider2(Spider):
     name = "strava_spider2"
     custom_settings = {
         'ITEM_PIPELINES': {
-            'stravascrape.pipelines.strava_spider2Pipeline': 1
+            'stravascrape.pipelines.Spider2Pipeline': 1
         }
     }
 
     allowed_urls = ["https://www.strava.com"]
     start_urls = ["https://www.strava.com/login"]
-    base_url = 'https://www.strava.com/athlete/training_activities?keywords=&activity_type=&workout_type=&commute=&private_activities=&trainer=&gear=&new_activity_only=false&page='
+    base_url = 'https://www.strava.com/activities/'
 
 
 
@@ -42,6 +42,10 @@ class Spider2(Spider):
 
         print("<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< IN go_to_data >>>>>>>>>>>>>>>")
         print(os.getcwd())
+
+        rides_df = pd.read_csv("spider1_output.csv")
+        ride_id_list = rides_df['ride_id']
+        
         
 
 
