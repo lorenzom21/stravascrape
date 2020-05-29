@@ -58,7 +58,7 @@ class Spider2(Spider):
 
 
     def scrape_page(self,response,list_idx):
-        print("<<<<<<<<<<<<<<<<<<<SCRAPING INDEX"+str(list_idx)+">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>")
+        print("<<<<<<<<<<<<<<<<<<<SCRAPING INDEX "+str(list_idx)+">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>")
 
 
         item = RidePageItem()
