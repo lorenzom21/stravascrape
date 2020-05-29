@@ -1,14 +1,17 @@
 from scrapy import Spider
-from scrapy.utils.markup import remove_tags 
 from scrapy.http import FormRequest
 from scrapy.http import Request
-from scrapy.http import TextResponse
-from scrapy.shell import inspect_response
 import json
 import os
 from stravascrape.login import my_email, my_password #This is my own file with the login credentials
 import pandas as pd
 from stravascrape.items import RidePageItem
+
+
+# import requests as proxy_requests
+
+# proxies = {'http': 'http://user:pass@10.10.1.10:3128/'}
+# proxy_requests.get('http://example.org', proxies=proxies)
 
         
 class Spider2(Spider):
@@ -28,9 +31,10 @@ class Spider2(Spider):
 
 
     def parse(self,response):
-        print("<<<<<<START PARSE >>>>>>>>>> ")
+        print("<<<<<<<<<<<<<LOG IN >>>>>>>>>>>>>>>>>>>> ")
         
         token = response.xpath('//*[@id="login_form"]/input[2]/@value').extract_first() #name in form is authenticity_token
+        # token = 'EuGLXAGTwmOSkSGdkim1CtPPhgFmqbmTTjmzs1gcDfahTWNfu5SKp/yfvfvSe8oVHdIbXSJ815JCpryTGLQEDw=='
         return FormRequest.from_response(response,formdata={
 
                 'authenticity_token': token,
@@ -42,49 +46,90 @@ class Spider2(Spider):
 
     def prep_ride_list(self,response):
 
-        print("<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< IN go_to_data >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>")
-        print(os.getcwd())
-
         rides_df = pd.read_csv("spider1_output.csv")
+        start_idx = 0 #because of request limits, I am having to run this script in parts.
         ride_id_list = rides_df['ride_id']
+        #ride_id_list = [1733394373]
         self.ride_id_list = ride_id_list
         self.n_pages=len(ride_id_list)
-        target = self.base_url+str(ride_id_list[0])
+        target = self.base_url+str(ride_id_list[start_idx])
 
-        yield Request(url=target, callback=self.scrape_page, cb_kwargs={'list_idx':0})
+        yield Request(url=target, callback=self.scrape_page, cb_kwargs={'list_idx':start_idx})
 
 
     def scrape_page(self,response,list_idx):
-        print("<<<<<<<<<<<<<<<<<<<Scraping index "+str(list_idx)+">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>")
+        print("<<<<<<<<<<<<<<<<<<<SCRAPING INDEX"+str(list_idx)+">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>")
 
 
         item = RidePageItem()
         item['ride_id'] = self.ride_id_list[list_idx]
-        item['avg_watts'] = response.xpath('//*[@id="heading"]/div/div/div[2]/ul[2]/li[1]/strong/text()').extract_first()
+        
+        #top block data
+        item['distance'] = response.xpath('//*[@id="heading"]/div/div/div[2]/ul[1]/li[1]/strong/text()').extract_first()
+        item['time'] = response.xpath('//*[@id="heading"]/div/div/div[2]/ul[1]/li[2]/strong/text()').extract_first()
+        item['elevation'] = response.xpath('//*[@id="heading"]/div/div/div[2]/ul[1]/li[3]/strong/text()').extract_first()
+        item['kJ']=response.xpath('//*[@id="heading"]/div/div/div[2]/ul[2]/li[2]/strong/text()').extract_first()
+
+        item['avg_weighted_watts'] = response.xpath('//*[@id="heading"]/div/div/div[2]/ul[2]/li[1]/strong/text()').extract_first()
 
         watts_type = response.xpath('//*[@id="heading"]/div/div/div[2]/ul[2]/li[1]/div/span/text()').extract_first() #need strip because there is \n in beginning and end
         if watts_type is not None:
             item['watts_type'] = watts_type.strip()
 
-        max_watts = response.xpath('//*[@id="heading"]/div/div/div[2]/div[1]/table/tbody[2]/tr[2]/td[2]/text()').extract_first()
+        #end of top block data
 
-        if max_watts is not None:
-            item['max_watts'] = max_watts.strip()
-            
-        item['distance'] = response.xpath('//*[@id="heading"]/div/div/div[2]/ul[1]/li[1]/strong/text()').extract_first()
-        item['time'] = response.xpath('//*[@id="heading"]/div/div/div[2]/ul[1]/li[2]/strong/text()').extract_first()
-        item['elevation'] = response.xpath('//*[@id="heading"]/div/div/div[2]/ul[1]/li[3]/strong/text()').extract_first()
-        item['kJ']=response.xpath('//*[@id="heading"]/div/div/div[2]/ul[2]/li[2]/strong/text()').extract_first()
-        item['avg_speed']=response.xpath('//*[@id="heading"]/div/div/div[2]/div[1]/table/tbody[1]/tr/td[1]/text()').extract_first()
-        item['max_speed']=response.xpath('//*[@id="heading"]/div/div/div[2]/div[1]/table/tbody[1]/tr/td[2]/text()').extract_first()
-        item['avg_cad'] = response.xpath('//*[@id="heading"]/div/div/div[2]/div[1]/table/tbody[2]/tr[1]/td[1]/text()').extract_first()
 
-        max_cad = response.xpath('//*[@id="heading"]/div/div/div[2]/div[1]/table/tbody[2]/tr[1]/td[2]/text()').extract_first()
-        if max_cad is not None:
-            item['max_cad'] = max_cad.strip()
+        #additional data
+        avg_speed=response.xpath('//*[@id="heading"]/div/div/div[2]/div[1]/table/tbody[1]/tr/td[1]/text()').extract_first()
+        if avg_speed is not None:
+            avg_speed.strip(" ")#strip white space
+            avg_speed.strip('"') #strip quotes
+            item['avg_speed'] = avg_speed
 
-        item['Calories'] = response.xpath('//*[@id="heading"]/div/div/div[2]/div[1]/table/tbody[2]/tr[3]/td/text()').extract_first()
-        item['avg_temp'] = response.xpath('//*[@id="heading"]/div/div/div[2]/div[1]/table/tbody[2]/tr[4]/td/text()').extract_first()
+        max_speed =response.xpath('//*[@id="heading"]/div/div/div[2]/div[1]/table/tbody[1]/tr/td[2]/text()').extract_first()
+        if max_speed is not None:
+            max_speed.strip(" ")
+            max_speed.strip('"')
+            item['max_speed'] = max_speed
+
+        showmore_block = response.xpath('//*[@id="heading"]/div/div[1]/div[2]/div[1]/table/tbody[2]')
+
+        #Don'w what data exactly will show up. So parse the table based on row names
+        showmore_dict = {}
+        showmore_dict['Cadence']=[None,None]
+        showmore_dict['Calories']=[None,None]
+        showmore_dict['Temperature']=[None,None]
+        showmore_dict['Power']=[None,None]
+
+
+        rows = showmore_block.xpath("./tr")
+        for row in rows:
+            name = row.xpath("./th/text()").extract_first()
+            val1 = row.xpath("./td[1]/text()").extract_first()
+            if val1 is not None:
+                val1 = val1.strip().strip('"').replace(",",'')
+
+            val2 = row.xpath("./td[2]/text()").extract_first()
+            if val2 is not None:
+                val2 = val2.strip().strip('"').strip(",").replace(",",'')
+
+
+            showmore_dict[name] = []
+            showmore_dict[name].append(val1)
+            showmore_dict[name].append(val2)
+
+
+        item['avg_cad'] = showmore_dict['Cadence'][0]
+        item['max_cad'] = showmore_dict['Cadence'][1]
+        item['Calories'] = showmore_dict['Calories'][0]
+       
+        item['avg_temp'] = showmore_dict['Temperature'][0] #this may have an error because contents has a <abbr> for the F/C
+
+        item['raw_avg_watts'] = showmore_dict['Power'][0] #this may throw an error because of the W
+        item['max_watts'] = showmore_dict['Power'][1]
+
+        #end of addtional data
+
 
         yield item
      
