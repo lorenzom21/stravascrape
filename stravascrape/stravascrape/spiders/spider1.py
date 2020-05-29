@@ -21,7 +21,7 @@ class Spider1(Spider):
 
     allowed_urls = ["https://www.strava.com"]
     start_urls = ["https://www.strava.com/login"]
-    base_url = 'https://www.strava.com/athlete/training_activities?keywords=&activity_type=&workout_type=&commute=&private_activities=&trainer=&gear=&new_activity_only=false&page='
+    base_url = 'https://www.strava.com/athlete/training_activities?keywords=&activity_type=Ride&workout_type=&commute=&private_activities=&trainer=&gear=&new_activity_only=false&page='
     headers = {}
 
 

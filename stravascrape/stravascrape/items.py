@@ -34,5 +34,24 @@ class RideItem(scrapy.Item):
     ride_type = scrapy.Field() #response is 'type'
     visibility = scrapy.Field()
 
+class RidePageItem(scrapy.Item):
+    # define the fields for your item here like:
+    # name = scrapy.Field()
+    ride_id = scrapy.Field() #response is 'id'
+    avg_watts = scrapy.Field()
+    max_watts = scrapy.Field()
+    watts_type = scrapy.Field()
+    distance = scrapy.Field()
+    time = scrapy.Field()
+    elevation = scrapy.Field()
+    kJ = scrapy.Field()
+    avg_speed = scrapy.Field()
+    max_speed = scrapy.Field()
+    avg_cad = scrapy.Field()
+    max_cad = scrapy.Field()
+    Calories = scrapy.Field()
+    avg_temp = scrapy.Field()
+   	
+
 
     
