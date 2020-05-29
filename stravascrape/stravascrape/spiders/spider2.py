@@ -65,12 +65,25 @@ class Spider2(Spider):
         item['ride_id'] = self.ride_id_list[list_idx]
         
         #top block data
-        item['distance'] = response.xpath('//*[@id="heading"]/div/div/div[2]/ul[1]/li[1]/strong/text()').extract_first()
-        item['time'] = response.xpath('//*[@id="heading"]/div/div/div[2]/ul[1]/li[2]/strong/text()').extract_first()
-        item['elevation'] = response.xpath('//*[@id="heading"]/div/div/div[2]/ul[1]/li[3]/strong/text()').extract_first()
-        item['kJ']=response.xpath('//*[@id="heading"]/div/div/div[2]/ul[2]/li[2]/strong/text()').extract_first()
+        distance = response.xpath('//*[@id="heading"]/div/div/div[2]/ul[1]/li[1]/strong/text()').extract_first()
+        if distance is not None:
+            item['distance']=distance.strip().strip('"').replace(",",'')
 
-        item['avg_weighted_watts'] = response.xpath('//*[@id="heading"]/div/div/div[2]/ul[2]/li[1]/strong/text()').extract_first()
+        item['time'] = response.xpath('//*[@id="heading"]/div/div/div[2]/ul[1]/li[2]/strong/text()').extract_first()
+
+        elevation = response.xpath('//*[@id="heading"]/div/div/div[2]/ul[1]/li[3]/strong/text()').extract_first()
+        if elevation is not None:
+            item['elevation'] = elevation.strip().strip('"').replace(",",'')
+
+
+        kJ = response.xpath('//*[@id="heading"]/div/div/div[2]/ul[2]/li[2]/strong/text()').extract_first()
+        if kJ is not None:
+            item['kJ'] = kJ.strip().strip('"').replace(",",'')
+
+        avg_weighted_watts = response.xpath('//*[@id="heading"]/div/div/div[2]/ul[2]/li[1]/strong/text()').extract_first()
+        if avg_weighted_watts is not None:
+            item['avg_weighted_watts'] = avg_weighted_watts.strip().strip('"').replace(",",'')
+
 
         watts_type = response.xpath('//*[@id="heading"]/div/div/div[2]/ul[2]/li[1]/div/span/text()').extract_first() #need strip because there is \n in beginning and end
         if watts_type is not None:
@@ -111,7 +124,7 @@ class Spider2(Spider):
 
             val2 = row.xpath("./td[2]/text()").extract_first()
             if val2 is not None:
-                val2 = val2.strip().strip('"').strip(",").replace(",",'')
+                val2 = val2.strip().strip('"').replace(",",'')
 
 
             showmore_dict[name] = []
