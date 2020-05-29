@@ -66,7 +66,11 @@ class Spider2(Spider):
         if watts_type is not None:
             item['watts_type'] = watts_type.strip()
 
-        item['max_watts'] = response.xpath('//*[@id="heading"]/div/div/div[2]/div[1]/table/tbody[1]/tr/td[2]/text()').extract_first()
+        max_watts = response.xpath('//*[@id="heading"]/div/div/div[2]/div[1]/table/tbody[2]/tr[2]/td[2]/text()').extract_first()
+
+        if max_watts is not None:
+            item['max_watts'] = max_watts.strip()
+            
         item['distance'] = response.xpath('//*[@id="heading"]/div/div/div[2]/ul[1]/li[1]/strong/text()').extract_first()
         item['time'] = response.xpath('//*[@id="heading"]/div/div/div[2]/ul[1]/li[2]/strong/text()').extract_first()
         item['elevation'] = response.xpath('//*[@id="heading"]/div/div/div[2]/ul[1]/li[3]/strong/text()').extract_first()
